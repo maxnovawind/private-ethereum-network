@@ -1,0 +1,63 @@
+# Default values: https://github.com/argoproj/argo-helm/blob/master/charts/argo-cd/values.yaml
+argo-cd:
+  controller:
+    logLevel: warn
+  repoServer:
+    logLevel: warn
+  global:
+    #image:
+      #tag: v2.4.28
+    logging:
+      level: warn
+  notifications:
+    enabled: false
+  server:
+    logLevel: warn
+    ingress:
+      enabled: false
+
+      # The NGINX ingress controller uses this class by default.
+      ingressClassName: kong
+
+      annotations:
+        konghq.com/plugins: ""
+        konghq.com/strip-path: "false"
+        konghq.com/preserve-host: 'true'
+
+      hosts: [] # Overwritten on a per-environment basis.
+
+      tls: [] # Overwritten on a per-environment basis.
+
+    extraArgs:
+      - --insecure
+      - --enable-gzip
+
+  configs:
+
+       # allow to use sync wave between app when using app of apps
+      #resource.customizations: |
+      #  argoproj.io/Application:
+      #    health.lua: |
+      #      hs = {}
+      #      hs.status = "Progressing"
+      #      hs.message = ""
+      #      if obj.status ~= nil then
+      #        if obj.status.health ~= nil then
+      #          hs.status = obj.status.health.status
+      #          if obj.status.health.message ~= nil then
+      #            hs.message = obj.status.health.message
+      #          end
+      #        end
+      #      end
+      #      return hs
+    secret:
+      createSecret: true
+      # For webhooks
+      gitlabSecret: '' # Overwritten on a per-environment basis.
+
+  dex:
+    enabled: false
+
+  applicationSet:
+    # -- Enable Application Set controller
+    enabled: true

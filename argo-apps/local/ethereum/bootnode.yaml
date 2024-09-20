@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: bootnode
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: ethereum
+    name: in-cluster
+  project: default
+  source:
+    path: helm-charts/ethereum/besu-node
+    repoURL: https://github.com/maxnovawind/private-ethereum-network.git
+    targetRevision: main
+    helm:
+      valueFiles:
+        - values.bootnode.local.yaml
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true

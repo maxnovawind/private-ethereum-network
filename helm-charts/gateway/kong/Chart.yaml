@@ -1,0 +1,8 @@
+apiVersion: v2
+name: kong
+type: application
+version: 2.26.5
+dependencies:
+  - name: kong
+    repository: https://charts.konghq.com
+    version: 2.26.5

@@ -1,0 +1,37 @@
+overridesMonitoringTemplate:
+  besu:
+    numberTransactionsThreshold: 10
+    chainStalledThreshold: 60
+    blockNetworkTimeThreshold: 30
+    peerRatioThreshold: 0.7
+
+kube-prometheus-stack:
+  grafana:
+    enabled: true
+    adminPassword: "prom-operator"
+    additionalDataSources:
+      - name: loki
+        access: proxy
+        url: http://loki-stack.monitoring.svc.cluster.local:3100/
+        type: loki
+        jsonData:
+          timeout: 60
+          maxLines: 1000
+    persistence:
+      enabled: true
+      type: pvc
+      storageClassName: standard
+      accessModes:
+        - ReadWriteOnce
+      size: 10Gi
+
+  # Fix target port for kind cluster
+  kubeEtcd:
+    service:
+      targetPort: 2381
+  kubeControllerManager:  
+    service:
+      targetPort: 10257
+  kubeScheduler:
+    service:
+      targetPort: 10259

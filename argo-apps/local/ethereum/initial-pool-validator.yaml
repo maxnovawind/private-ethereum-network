@@ -1,0 +1,67 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: initial-pool-validator
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  goTemplate: true
+  goTemplateOptions: ["missingkey=error"]
+  syncPolicy:
+    preserveResourcesOnDeletion: true
+  generators:
+    - list:
+        elements:
+          - name: validator-1
+          - name: validator-2
+          - name: validator-3
+          - name: validator-4
+  # TODO: uncomment this when argocd supports rolling sync is ready for production
+  #strategy:
+  #  type: RollingSync
+  #  rollingSync:
+  #    steps:
+  #      - matchExpressions:
+  #          - key: name
+  #            operator: In
+  #            values: 
+  #              - validator-1
+  #      - matchExpressions:
+  #          - key: name
+  #            operator: In
+  #            values: 
+  #              - validator-2
+  #      - matchExpressions:
+  #          - key: name
+  #            operator: In
+  #            values:
+  #              - validator-3
+  #      - matchExpressions:
+  #          - key: name
+  #            operator: In
+  #            values:
+  #              - validator-4
+
+  template:
+    metadata:
+      name: '{{.name}}'
+    spec:
+      project: "default"
+      source:
+        repoURL: https://github.com/maxnovawind/private-ethereum-network.git
+        targetRevision: main
+        path: helm-charts/ethereum/besu-node
+        helm:
+          valueFiles:
+            - values.validator.local.yaml
+      destination:
+        name: in-cluster
+        namespace: ethereum
+      syncPolicy:
+        # TODO: this is a temporary workaround to prevent the initial pool validator from being upgraded,
+        # we made manual sync a requirement for now until argocd supports rolling sync
+        automated: {}
+        syncOptions:
+          - CreateNamespace=false

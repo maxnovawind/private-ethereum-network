@@ -1,0 +1,24 @@
+{{- range .Values.app_of_apps }}
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: {{ .name }}
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+    helm.sh/hook: post-install
+    helm.sh/hook-weight: "5"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .project | default "default" }}
+  destination:
+    namespace: {{ .destination.namespace | default "argocd" }}
+    name: {{ .destination.name | default "in-cluster" }}
+  source:
+    repoURL: {{ .source.repoURL }}
+    path: {{ .source.path | default "./argo-apps/local" }}
+    targetRevision: {{ .source.targetRevision | default "main" }}
+    directory:
+      recurse: true
+{{- end }}

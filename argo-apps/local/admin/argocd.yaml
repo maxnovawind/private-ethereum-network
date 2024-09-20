@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  annotations:
+    argocd.argoproj.io/manifest-generate-paths: .
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: argocd
+    name: in-cluster
+  project: default
+  source:
+    path: helm-charts/argocd
+    repoURL: https://github.com/maxnovawind/private-ethereum-network.git
+    targetRevision: main
+    helm:
+      valueFiles:
+        - values.yaml
+        - values.local.yaml
+  syncPolicy:
+    automated:
+      selfHeal: true
+      prune: true
+    syncOptions:
+      - CreateNamespace=true

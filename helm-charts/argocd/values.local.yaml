@@ -1,0 +1,28 @@
+app_of_apps:
+  - name: admin-apps
+    project: default
+    source:
+      repoURL: https://github.com/maxnovawind/private-ethereum-network.git
+      targetRevision: main
+      path: ./argo-apps/local/admin
+    destination:
+      namespace: argocd
+      name: in-cluster
+  - name: monitoring-apps
+    project: default
+    source:
+      repoURL: https://github.com/maxnovawind/private-ethereum-network.git
+      targetRevision: main
+      path: ./argo-apps/local/monitoring
+    destination:
+      namespace: argocd
+      name: in-cluster
+  - name: ethereum-apps
+    project: default
+    source:
+      repoURL: https://github.com/maxnovawind/private-ethereum-network.git
+      targetRevision: main
+      path: ./argo-apps/local/ethereum
+    destination:
+      namespace: argocd
+      name: in-cluster

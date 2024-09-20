@@ -1,0 +1,76 @@
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app: besu
+  name: besu-alerts-chain-stalled
+spec:
+  groups:
+  - name: BlockchainAlerts
+    rules:
+    - alert: BesuChainStalled
+      annotations:
+        description: Besu Chain behind more than 1 minute ({{`{{`}} $labels.service {{`}}`}} node service)
+        summary: Besu Chain behind more than 1 minute
+      expr: (time() - max (besu_blockchain_chain_head_timestamp) by (service)) > {{ .Values.overridesMonitoringTemplate.besu.chainStalledThreshold | default 60 }}
+      for: 1m
+      labels:
+        severity: critical
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app: besu
+  name: besu-alerts-block-network-time
+spec:
+  groups:
+  - name: BlockchainAlerts
+    rules:
+    - alert: HighBlockNetworkTime
+      expr: max((time() - besu_blockchain_chain_head_timestamp)) > {{ .Values.overridesMonitoringTemplate.besu.blockNetworkTimeThreshold | default 30 }}
+      for: 1m
+      labels:
+        severity: critical
+      annotations:
+        summary: "High Block Network Time"
+        description: "The block network time has exceeded the threshold of 30 seconds. Current value: {{`{{`}} $value {{`}}`}} seconds."
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app: besu
+  name: besu-alerts-peer-ratio
+spec:
+  groups:
+  - name: BlockchainAlerts
+    rules:
+    - alert: HighPeerRatio
+      expr: sum by (service) (ethereum_peer_count/ethereum_peer_limit) > {{ .Values.overridesMonitoringTemplate.besu.peerRatioThreshold | default 0.7 }}
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High Peer Ratio"
+        description: "The ratio of current peer count to peer limit has exceeded 80%. Current instance: {{`{{`}} $labels.service {{`}}`}} node service."
+---
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  labels:
+    app: besu
+  name: besu-alerts-network-transactions
+spec:
+  groups:
+  - name: blockchainAlerts
+    rules:
+    - alert: HighTPS
+      expr: max(rate(ethereum_blockchain_height[1m])) * max(avg_over_time(besu_blockchain_chain_head_transaction_count[1m])) > {{ .Values.overridesMonitoringTemplate.besu.numberTransactionsThreshold | default 10 }}
+      for: 1m
+      labels:
+        severity: warning
+      annotations:
+        summary: "High number of transactions detected"
+        description: "The number of transactions per second has exceeded {{ .Values.overridesMonitoringTemplate.besu.numberTransactionsThreshold | default 10 }} for more than 1 minute."
